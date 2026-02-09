@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlops-churn-train
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlops-churn-train
+  template:
+    metadata:
+      labels:
+        app: mlops-churn-train
+    spec:
+      containers:
+        - name: mlops-churn-train
+          image: your-registry/mlops-churn-train:latest
+          command: ["python", "src/train.py"]
+          volumeMounts:
+            - mountPath: /app/data
+              name: data-volume
+            - mountPath: /app/artifacts
+              name: artifacts-volume
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: data-pvc
+        - name: artifacts-volume
+          persistentVolumeClaim:
+            claimName: artifacts-pvc

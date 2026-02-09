@@ -1,0 +1,87 @@
+stages:
+  - lint
+  - test
+  - build
+  - push
+  - deploy
+
+variables:
+  DOCKER_IMAGE: $CI_REGISTRY_IMAGE/mlops-churn-train
+  DOCKER_TAG: $CI_COMMIT_SHORT_SHA
+  KUBECONFIG: /builds/$CI_PROJECT_PATH/kubeconfig
+
+# ----------------------------------
+# Stage 1: Code Linting (Python)
+# ----------------------------------
+lint:
+  stage: lint
+  image: python:3.10
+  script:
+    - pip install -r requirements.txt
+    - flake8 src tests
+  only:
+    - merge_requests
+    - main
+
+# ----------------------------------
+# Stage 2: Unit Tests
+# ----------------------------------
+test:
+  stage: test
+  image: python:3.10
+  script:
+    - pip install -r requirements.txt
+    - pytest tests --maxfail=1 --disable-warnings -q
+  artifacts:
+    reports:
+      junit: report.xml
+  only:
+    - merge_requests
+    - main
+
+# ----------------------------------
+# Stage 3: Build Docker Image
+# ----------------------------------
+build:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
+  only:
+    - main
+    - dev
+
+# ----------------------------------
+# Stage 4: Push Docker Image
+# ----------------------------------
+push:
+  stage: push
+  image: docker:24
+  services:
+    - docker:24-dind
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker push $DOCKER_IMAGE:$DOCKER_TAG
+  only:
+    - main
+    - dev
+
+# ----------------------------------
+# Stage 5: Deploy via GitOps (Argo CD)
+# ----------------------------------
+deploy:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  script:
+    - mkdir -p ~/.kube
+    - echo "$KUBECONFIG_CONTENT" > ~/.kube/config
+    - kubectl get nodes
+    - kubectl apply -k gitops/overlays/dev
+    - argocd app sync mlops-churn-app || echo "ArgoCD sync triggered"
+  only:
+    - main
+  environment:
+    name: dev

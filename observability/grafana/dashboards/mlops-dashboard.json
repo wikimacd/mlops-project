@@ -1,0 +1,16 @@
+{
+  "title": "MLOps Churn Train Metrics",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "CPU Usage",
+      "targets": []
+    },
+    {
+      "type": "graph",
+      "title": "Memory Usage",
+      "targets": []
+    }
+  ],
+  "schemaVersion": 16
+}

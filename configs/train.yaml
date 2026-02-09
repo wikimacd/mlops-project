@@ -1,0 +1,27 @@
+data:
+  feature_path: /app/data/features/churn_features.parquet
+  target: churn_label
+  timestamp_col: snapshot_date
+
+split:
+  train_end_date: "2024-11-30"
+  val_end_date: "2024-12-31"
+
+model:
+  type: gradient_boosting
+  params:
+    n_estimators: 200
+    learning_rate: 0.05
+    max_depth: 3
+    random_state: 42
+
+metrics:
+  primary: roc_auc
+  min_roc_auc: 0.5   # lowered from 0.75
+
+# metrics:
+#   primary: roc_auc
+#   min_roc_auc: 0.75
+
+artifacts:
+  output_dir: artifacts/

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Data & artifacts
+data/
+artifacts/
+*.parquet
+*.pkl
+*.joblib
+
+# ML
+mlruns/
+wandb/
+
+# Kubernetes
+*.log
+
+# OS
+.DS_Store

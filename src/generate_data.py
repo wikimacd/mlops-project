@@ -21,6 +21,7 @@ df = pd.DataFrame({
 # Customers with low activity in last 7 days are more likely to churn
 df["churn_label"] = (df["actions_7d"] < 3).astype(int)
 
+# Testing
 # Save to Parquet
 df.to_parquet("data/features/churn_features.parquet", index=False)
 
